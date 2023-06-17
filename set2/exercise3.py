@@ -34,12 +34,16 @@ def fix_it(moves=True, should_move=True):
     Most people write this function with 4 return statements.
     As an extra challenge, see if you can get that down to three.
     """
-    if moves and should_move:
-        return "No Problem"
-    elif not moves and should_move:
-        return "WD-40"
-    return "Duct Tape"
-
+    if moves:
+        if should_move:
+            return "No Problem"
+        else:
+            return "Duct Tape"
+    else:
+        if should_move:
+            return "WD-40"
+        else:
+            return "No Problem"
 
 def loops_preview():
     """Make 8 poops.
@@ -243,9 +247,18 @@ def loops_7():
     lots of diagrams!
     """
     pyramid = []
-    for i in range(5):
-        row = [' '] * (8 - i * 2) + ['*'] * (i * 2 + 1) + [' '] * (8 - i * 2)
+    rows = 5
+    cols = 9
+
+    for i in range(rows):
+        row = []
+        for j in range(cols):
+            if j >= (cols // 2) - i and j <= (cols // 2) + i:
+                row.append('*')
+            else:
+                row.append(' ')
         pyramid.append(row)
+
     return pyramid
 
 
