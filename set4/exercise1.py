@@ -40,7 +40,14 @@ def get_some_details():
     json_data = open(LOCAL + "/lazyduck.json").read()
 
     data = json.loads(json_data)
-    return {"lastName": None, "password": None, "postcodePlusID": None}
+    last_name = data["results"][0]["name"]["last"]
+    password = data["results"][0]["login"]["password"]
+    postcode = int(data["results"][0]["location"]["postcode"])
+    id_value = int(data["results"][0]["id"]["value"])
+
+    postcode_plus_id = postcode + id_value
+
+    return {"lastName": last_name, "password": password, "postcodePlusID": postcode_plus_id}
 
 
 def wordy_pyramid():
@@ -78,6 +85,20 @@ def wordy_pyramid():
     TIP: to add an argument to a URL, use: ?argName=argVal e.g. &wordlength=
     """
     pyramid = []
+    for length in range(3, 21, 2):
+        url = f"https://us-central1-waldenpondpress.cloudfunctions.net/give_me_a_word?wordlength={length}"
+        response = requests.get(url)
+        if response.status_code == 200:
+            word = response.text.strip()
+            pyramid.append(word)
+
+    # Step down
+    for length in range(19, 0, -2):
+        url = f"https://us-central1-waldenpondpress.cloudfunctions.net/give_me_a_word?wordlength={length}"
+        response = requests.get(url)
+        if response.status_code == 200:
+            word = response.text.strip()
+            pyramid.append(word)
 
     return pyramid
 
@@ -102,7 +123,26 @@ def pokedex(low=1, high=5):
     if r.status_code is 200:
         the_json = json.loads(r.text)
 
-    return {"name": None, "weight": None, "height": None}
+    tallest_pokemon = None
+    tallest_height = 0
+
+    for id in range(low, high+1):
+        url = f"https://pokeapi.co/api/v2/pokemon/{id}"
+        response = requests.get(url)
+        if response.status_code == 200:
+            pokemon_data = json.loads(response.text)
+            height = pokemon_data["height"]
+            if height > tallest_height:
+                tallest_pokemon = pokemon_data
+                tallest_height = height
+
+    if tallest_pokemon:
+        name = tallest_pokemon["name"]
+        weight = tallest_pokemon["weight"]
+        height = tallest_pokemon["height"]
+        return {"name": name, "weight": weight, "height": height}
+    else:
+        return {"name": None, "weight": None, "height": None}
 
 
 def diarist():
@@ -122,7 +162,17 @@ def diarist():
 
     NOTE: this function doesn't return anything. It has the _side effect_ of modifying the file system
     """
-    pass
+    gcode_file_path = "Set4/Trispokedovetiles(laser).gcode"
+    count = 0
+
+    with open(gcode_file_path, "r") as gcode_file:
+        for line in gcode_file:
+            if "M10 P1" in line:
+                count += 1
+
+    result_file_path = "Set4/lasers.pew"
+    with open(result_file_path, "w") as result_file:
+        result_file.write(str(count))
 
 
 if __name__ == "__main__":
